@@ -1,8 +1,39 @@
 import axios from 'axios';
 
-// Base URL configured from environment variable
+// Dynamically determine the base API URL:
+// 1. Explicit environment variable
+// 2. Custom override from localStorage
+// 3. Render cloud backend for GitHub Pages production
+// 4. Localhost for local development
+export const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const custom = localStorage.getItem('student_api_url');
+    if (custom) return custom;
+
+    if (window.location.hostname.includes('github.io')) {
+      return 'https://student-task-manager-api.onrender.com/api';
+    }
+  }
+  return 'http://localhost:5000/api';
+};
+
+export const setApiBaseUrl = (url) => {
+  if (typeof window !== 'undefined') {
+    if (url && url.trim()) {
+      localStorage.setItem('student_api_url', url.trim());
+    } else {
+      localStorage.removeItem('student_api_url');
+    }
+    window.location.reload();
+  }
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: getApiBaseUrl(),
+  timeout: 35000, // 35 seconds to allow Render cold start
   headers: {
     'Content-Type': 'application/json',
   },
@@ -20,7 +51,7 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle 401 Unauthorized globally
+// Response interceptor: handle 401 Unauthorized globally and handle network timeouts gracefully
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,6 +66,13 @@ API.interceptors.response.use(
         window.location.hash = '#/login';
       }
     }
+
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+      error.customMessage = 'Server request timed out. Free cloud servers take 30-45 seconds to wake up from sleep mode on first request. Please try again in a few moments.';
+    } else if (!error.response && error.message && error.message.includes('Network Error')) {
+      error.customMessage = 'Cannot connect to backend server. Please make sure the backend is deployed on Render or verify your internet connection.';
+    }
+
     return Promise.reject(error);
   }
 );

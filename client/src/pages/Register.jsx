@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CheckSquare, UserPlus, Lock, Mail, User, GraduationCap, AlertCircle } from 'lucide-react';
+import { getApiBaseUrl, setApiBaseUrl } from '../services/api';
+import { CheckSquare, UserPlus, Lock, Mail, User, GraduationCap, AlertCircle, Server } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -54,10 +55,20 @@ const Register = () => {
       navigate('/');
     } catch (err) {
       console.error('Registration error:', err);
-      setError(
-        err.response?.data?.message ||
-          'Failed to create account. Please check your details and try again.'
-      );
+      if (err.customMessage) {
+        setError(err.customMessage);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (!err.response && (err.message?.includes('Network') || err.code === 'ERR_NETWORK')) {
+        setError(
+          'Cannot connect to backend server. The cloud backend is waking up or not yet deployed on Render. Please verify below.'
+        );
+      } else {
+        setError(
+          err.response?.data?.message ||
+            'Failed to create account. Please check your details and try again.'
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -324,6 +335,77 @@ const Register = () => {
             <Link to="/login" style={{ fontWeight: 600, color: 'var(--primary)' }}>
               Sign In
             </Link>
+          </div>
+
+          {/* Server Connection Info */}
+          <div
+            style={{
+              marginTop: '1.5rem',
+              textAlign: 'center',
+              borderTop: '1px solid #f3f4f6',
+              paddingTop: '1rem',
+            }}
+          >
+            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.35rem' }}>
+              Connected Backend API:
+            </p>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                backgroundColor: '#f8fafc',
+                padding: '0.3rem 0.65rem',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  flexShrink: 0,
+                }}
+              ></span>
+              <code
+                style={{
+                  fontSize: '0.72rem',
+                  color: '#4f46e5',
+                  wordBreak: 'break-all',
+                }}
+              >
+                {getApiBaseUrl()}
+              </code>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const current = getApiBaseUrl();
+                const newUrl = window.prompt(
+                  'Configure Backend API URL (e.g. from Render):\nLeave empty to reset to default.',
+                  current
+                );
+                if (newUrl !== null) {
+                  setApiBaseUrl(newUrl);
+                }
+              }}
+              style={{
+                display: 'block',
+                margin: '0.4rem auto 0',
+                fontSize: '0.7rem',
+                color: '#6366f1',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              Change API URL
+            </button>
           </div>
         </form>
       </div>
