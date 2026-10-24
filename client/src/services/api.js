@@ -14,7 +14,7 @@ export const getApiBaseUrl = () => {
     if (custom) return custom;
 
     if (window.location.hostname.includes('github.io')) {
-      return 'https://student-task-manager-api.onrender.com/api';
+      return 'https://student-task-manager-api-1woo.onrender.com/api';
     }
   }
   return 'http://localhost:5000/api';
