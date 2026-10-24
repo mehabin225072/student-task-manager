@@ -6,8 +6,8 @@ import { CheckSquare, LogIn, Lock, Mail, AlertCircle, Zap } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: 'najva225072@gmail.com',
+    password: 'password123',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
