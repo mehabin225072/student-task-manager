@@ -6,18 +6,11 @@ import axios from 'axios';
 // 3. Render cloud backend for GitHub Pages production
 // 4. Localhost for local development
 export const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
   if (typeof window !== 'undefined') {
     const custom = localStorage.getItem('student_api_url');
     if (custom) return custom;
-
-    if (window.location.hostname.includes('github.io')) {
-      return 'https://student-task-manager-api-1woo.onrender.com/api';
-    }
   }
-  return 'http://localhost:5000/api';
+  return import.meta.env.VITE_API_URL || 'https://student-task-manager-api-1woo.onrender.com/api';
 };
 
 export const setApiBaseUrl = (url) => {
