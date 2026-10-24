@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl, setApiBaseUrl } from '../services/api';
-import { CheckSquare, LogIn, Lock, Mail, AlertCircle } from 'lucide-react';
+import { CheckSquare, LogIn, Lock, Mail, AlertCircle, Zap } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +18,28 @@ const Login = () => {
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError('');
+  };
+
+  const handleDemoLogin = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setFormData({
+        email: 'najva225072@gmail.com',
+        password: 'password123',
+      });
+      await login('najva225072@gmail.com', 'password123');
+      navigate('/');
+    } catch (err) {
+      console.error('Demo login error:', err);
+      setError(
+        err.customMessage ||
+          err.response?.data?.message ||
+          'Failed to sign in. Please verify your connection.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -128,6 +150,51 @@ const Login = () => {
               <span>{error}</span>
             </div>
           )}
+
+          {/* One-Click Instant Demo Login Button */}
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={loading}
+            style={{
+              width: '100%',
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              padding: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              borderRadius: 'var(--radius-md)',
+              marginBottom: '1.25rem',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Zap size={19} />
+            <span>⚡ One-Click Demo Student Login</span>
+          </button>
+
+          {/* Divider */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              margin: '0 0 1.25rem',
+              color: 'var(--text-subtle)',
+              fontSize: '0.8rem',
+            }}
+          >
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+            <span style={{ padding: '0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              or sign in with any email
+            </span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+          </div>
 
           {/* Email */}
           <div className="form-group">
