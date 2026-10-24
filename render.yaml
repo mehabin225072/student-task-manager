@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: student-task-manager-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: mongodb+srv://najva225072_db_user:nechu1234@cluster0.pqqfir7.mongodb.net/student_task_manager?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: 7c63b177b28092630d0e264828d69cc2c559b0a83494ace06b32b06a7a51ce89
+      - key: CLIENT_URL
+        value: https://mehabin225072.github.io
