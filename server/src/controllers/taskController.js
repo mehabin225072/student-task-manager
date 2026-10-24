@@ -1,11 +1,109 @@
 const mongoose = require('mongoose');
 const Task = require('../models/Task');
 
+// Helper to seed realistic academic tasks for any user who has 0 tasks
+const seedDefaultTasksForUser = async (userId) => {
+  const sampleTasks = [
+    {
+      user: userId,
+      title: 'Complete ICTAK MERN Stack Project Submission',
+      description:
+        'Verify live deployment on GitHub Pages, Render cloud API backend, and MongoDB Atlas database connection.',
+      subject: 'Web Development',
+      priority: 'High',
+      status: 'Pending',
+      dueDate: new Date(Date.now() + 86400000 * 2),
+    },
+    {
+      user: userId,
+      title: 'Data Structures Assignment: AVL Trees & Graph Traversal',
+      description:
+        'Implement BFS and DFS graph traversals and compare time complexity using adjacency list representation.',
+      subject: 'Data Structures',
+      priority: 'High',
+      status: 'Pending',
+      dueDate: new Date(Date.now() + 86400000 * 4),
+    },
+    {
+      user: userId,
+      title: 'DBMS Lab: Normalize Tables to 3NF & BCNF',
+      description:
+        'Decompose student course registration schema into 3NF and verify loss-less join property.',
+      subject: 'Database Systems',
+      priority: 'Medium',
+      status: 'Completed',
+      dueDate: new Date(Date.now() - 86400000 * 1),
+    },
+    {
+      user: userId,
+      title: 'Java OOP Microproject: Library Management Module',
+      description:
+        'Implement inheritance, interface abstraction, and custom exception handling for book issue tracking.',
+      subject: 'Object Oriented Programming',
+      priority: 'Medium',
+      status: 'Pending',
+      dueDate: new Date(Date.now() + 86400000 * 6),
+    },
+    {
+      user: userId,
+      title: 'Discrete Mathematics: Solve Recurrence Relations',
+      description:
+        'Solve homogeneous recurrence relations using characteristic equation roots and Master Theorem.',
+      subject: 'Mathematics',
+      priority: 'Low',
+      status: 'Completed',
+      dueDate: new Date(Date.now() - 86400000 * 2),
+    },
+    {
+      user: userId,
+      title: 'Operating Systems: CPU Scheduling Algorithms Simulation',
+      description:
+        'Calculate average waiting time and turnaround time for FCFS, SJF, and Round Robin scheduling.',
+      subject: 'Operating Systems',
+      priority: 'High',
+      status: 'Pending',
+      dueDate: new Date(Date.now() + 86400000 * 7),
+    },
+    {
+      user: userId,
+      title: 'Prepare Presentation Slides for MERN Project Viva',
+      description:
+        'Create clean slides explaining MVC pattern, JWT authentication flow, and REST API CRUD endpoints.',
+      subject: 'Web Development',
+      priority: 'High',
+      status: 'Pending',
+      dueDate: new Date(Date.now() + 86400000 * 3),
+    },
+    {
+      user: userId,
+      title: 'Computer Organization: Cache Memory Mapping Study',
+      description:
+        'Compare Direct-mapped, Fully associative, and Set-associative cache placement techniques.',
+      subject: 'Computer Architecture',
+      priority: 'Low',
+      status: 'Completed',
+      dueDate: new Date(Date.now() - 86400000 * 3),
+    },
+  ];
+
+  try {
+    await Task.insertMany(sampleTasks);
+  } catch (e) {
+    console.error('Auto-seed default tasks error:', e.message);
+  }
+};
+
 // @desc    Get all tasks for logged in student
 // @route   GET /api/tasks
 // @access  Private
 const getTasks = async (req, res, next) => {
   try {
+    // If the logged in student currently has 0 tasks, seed default tasks so they never see an empty screen
+    const userTaskCount = await Task.countDocuments({ user: req.user._id });
+    if (userTaskCount === 0) {
+      await seedDefaultTasksForUser(req.user._id);
+    }
+
     const {
       status,
       priority,
@@ -91,6 +189,13 @@ const getTasks = async (req, res, next) => {
 const getTaskStats = async (req, res, next) => {
   try {
     const userId = req.user._id;
+
+    // If student has 0 tasks, auto-seed default academic tasks
+    const count = await Task.countDocuments({ user: userId });
+    if (count === 0) {
+      await seedDefaultTasksForUser(userId);
+    }
+
     const now = new Date();
 
     const [total, pending, completed, highPriority, overdue] =
