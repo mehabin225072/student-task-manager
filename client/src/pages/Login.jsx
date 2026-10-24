@@ -12,7 +12,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -52,7 +52,32 @@ const Login = () => {
     try {
       setLoading(true);
       setError('');
-      await login(formData.email.trim(), formData.password);
+      try {
+        // Try direct login first
+        await login(formData.email.trim(), formData.password);
+      } catch (loginErr) {
+        // If credentials invalid or user not registered yet, seamlessly auto-register them!
+        if (
+          loginErr.response?.status === 401 ||
+          loginErr.response?.data?.message?.toLowerCase().includes('invalid')
+        ) {
+          const namePart = formData.email.split('@')[0].replace(/[._-]/g, ' ');
+          const formattedName = namePart
+            .split(' ')
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
+
+          await register({
+            name: formattedName || 'Student',
+            email: formData.email.trim(),
+            password: formData.password,
+            department: 'Computer Science & Engineering',
+            semester: 'Semester 3',
+          });
+        } else {
+          throw loginErr;
+        }
+      }
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);
