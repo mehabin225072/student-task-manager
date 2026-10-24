@@ -27,12 +27,12 @@ API.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Clear token if expired/invalid and not already on auth page
       if (
-        !window.location.pathname.includes('/login') &&
-        !window.location.pathname.includes('/register')
+        !window.location.href.includes('/login') &&
+        !window.location.href.includes('/register')
       ) {
         localStorage.removeItem('student_token');
         localStorage.removeItem('student_user');
-        window.location.href = '/login';
+        window.location.hash = '#/login';
       }
     }
     return Promise.reject(error);
